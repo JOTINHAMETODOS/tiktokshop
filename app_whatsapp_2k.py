@@ -20,7 +20,8 @@ if "config_app" not in st.session_state:
     }
 
 # Puxa a chave configurada nos Secrets do Streamlit
-GEMINI_API_KEY = st.secrets.get("GEMINI_KEY", "")
+GEMINI_API_KEY = st.secrets.get("CHAVE_MESTRE", "")
+
 
 def chamar_gemini_gratis(prompt_texto):
     # Rota direta do Google Gemini 1.5 Flash
