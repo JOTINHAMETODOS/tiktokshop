@@ -8,35 +8,35 @@ NUMERO_WHATSAPP = "5569992813319"  # Seu número com DDD 69
 SENHA_PAINEL_ADMIN = "ADMIN_2K_SECRET" 
 USUARIO_ADMIN_MESTRO = "admin"
 
-# Inicialização segura da memória nativa do servidor (Evita travamentos de tela preta)
 if "clientes_premium" not in st.session_state:
     st.session_state["clientes_premium"] = {}
 
-# Área que guarda as imagens e textos mutáveis (Editáveis pelo Painel Admin)
 if "config_app" not in st.session_state:
     st.session_state["config_app"] = {
         "titulo": "🚀 Analisador Viral TikTok Shop",
         "subtitulo": "Descubra o que falta para seu perfil alcançar 2.000 seguidores e liberar as vendas",
-        "logo_url": "https://unsplash.com", # Logo padrão do app
-        "capa_url": "" # Capa opcional começa em branco
+        "logo_url": "https://unsplash.com",
+        "capa_url": ""
     }
 
 GEMINI_API_KEY = st.secrets.get("GEMINI_KEY", "")
 
 def chamar_gemini_gratis(prompt_texto):
+    # ROTA OFICIAL ATUALIZADA PARA CHAVES PADRÃO AQ. EM 2026
     url = "https://googleapis.com"
-    headers = {"Authorization": f"Bearer {GEMINI_API_KEY}"} if GEMINI_API_KEY.startswith("AQ") else {}
-    endpoint = f"{url}?key={GEMINI_API_KEY}" if not GEMINI_API_KEY.startswith("AQ") else url
+    
+    # Configuração de cabeçalho exigida pelo Google para chaves de alta segurança
+    headers = {
+        "Content-Type": "application/json",
+        "x-goog-api-key": GEMINI_API_KEY
+    }
     
     payload = {"contents": [{"parts": [{"text": prompt_texto}]}]}
     try:
-        if GEMINI_API_KEY.startswith("AQ"):
-            resposta = requests.post(endpoint, json=payload, headers=headers, timeout=15).json()
-        else:
-            resposta = requests.post(endpoint, json=payload, timeout=15).json()
+        resposta = requests.post(url, json=payload, headers=headers, timeout=15).json()
         return resposta['candidates']['content']['parts']['text']
     except Exception as e:
-        return "⚠️ Erro de ativação. Por favor, verifique se a sua chave do Gemini foi colada corretamente na aba 'Secrets' do Streamlit."
+        return "⚠️ Chave de API inválida ou pendente de ativação. Verifique se copiou o código completo sem espaços nos Secrets do Streamlit."
 
 def capturar_ip():
     try:
@@ -49,7 +49,6 @@ query_params = st.query_params
 token_cliente = query_params.get("token", None)
 modo_admin = query_params.get("admin", None)
 
-# Puxa os dados customizados salvos na memória do app
 APP_TITULO = st.session_state["config_app"]["titulo"]
 APP_SUBTITULO = st.session_state["config_app"]["subtitulo"]
 APP_LOGO = st.session_state["config_app"]["logo_url"]
@@ -97,9 +96,7 @@ def puxar_dados_reais_tiktok(username):
         pass
     return {"sucesso": False}
 
-# =====================================================================
-# 🎛️ PAINEL ADMINISTRATIVO MESTRE (EDITÁVEL)
-# =====================================================================
+# PAINEL ADMIN
 if modo_admin == "true":
     st.title("🎛️ Autenticação Administrativa")
     with st.form("login_admin"):
@@ -114,25 +111,24 @@ if modo_admin == "true":
             
     if st.session_state.get("admin_autenticado", False):
         st.success("🔓 Conectado!")
-        
-        st.subheader("🎨 Personalizar Visual do Aplicativo (Inovar Sempre)")
+        st.subheader("🎨 Personalizar Visual")
         novo_titulo = st.text_input("Título do Aplicativo:", APP_TITULO)
         novo_subtitulo = st.text_area("Subtítulo da Tela Inicial:", APP_SUBTITULO)
-        nova_logo = st.text_input("Link da LOGO (URL do ImgBB):", APP_LOGO)
-        nova_capa = st.text_input("Link da Imagem de CAPA (URL do ImgBB):", APP_CAPA, placeholder="Cole aqui para exibir um banner no topo")
+        nova_logo = st.text_input("Link da LOGO:", APP_LOGO)
+        nova_capa = st.text_input("Link da Imagem de CAPA:", APP_CAPA)
         
-        if st.button("💾 Salvar Novas Configurações Visuais"):
+        if st.button("💾 Salvar Novas Configurações"):
             st.session_state["config_app"]["titulo"] = novo_titulo
             st.session_state["config_app"]["subtitulo"] = novo_subtitulo
             st.session_state["config_app"]["logo_url"] = nova_logo
             st.session_state["config_app"]["capa_url"] = nova_capa
-            st.success("✨ Visual updated!")
+            st.success("✨ Visual atualizado!")
             st.rerun()
             
         st.markdown("---")
-        st.subheader("🔑 Links Premium (Emissão de Clientes)")
+        st.subheader("🔑 Links Premium")
         with st.form("criar_token"):
-            novo_tk = st.text_input("Nome do Comprador (Ex: MARCOS_VIP):").strip()
+            novo_tk = st.text_input("Nome do Comprador:").strip()
             cadastrar = st.form_submit_button("➕ Gerar Novo Link de Acesso")
             if cadastrar and novo_tk:
                 if novo_tk not in st.session_state["clientes_premium"]:
@@ -152,9 +148,7 @@ if modo_admin == "true":
                     st.rerun()
     st.stop()
 
-# =====================================================================
-# 💎 FLUXO B: ÁREA PREMIUM COMPRADA
-# =====================================================================
+# ÁREA PREMIUM
 if token_cliente:
     if token_cliente in st.session_state["clientes_premium"]:
         ip_g = st.session_state["clientes_premium"][token_cliente]
@@ -173,7 +167,7 @@ if token_cliente:
         nicho = st.selectbox("Qual o nicho do produto?", ["Achadinhos", "Gamer", "Beleza", "Moda", "Saúde"])
         username_premium = st.text_input("Digite o @usuario para auditoria profunda:")
         if st.button("🚀 Iniciar Auditoria Avançada"):
-            with st.spinner("🧠 Gerando estratégias de 2026..."):
+            with st.spinner("🧠 Gerando estratégias..."):
                 dados_tiktok = puxar_dados_reais_tiktok(username_premium)
                 ctx = f"Perfil real com {dados_tiktok['seguidores']} seguidores." if dados_tiktok["sucesso"] else ""
                 prompt_vip = f"Você é mentor de TikTok Shop. Crie um plano com 3 roteiros virais copiáveis de 2026 para o usuário {username_premium}. Nicho: {nicho}. {ctx}"
@@ -181,9 +175,7 @@ if token_cliente:
                 st.markdown(resultado_ia)
         st.stop()
 
-# =====================================================================
-# 🚀 FLUXO C: TELA INICIAL PÚBLICA
-# =====================================================================
+# TELA PÚBLICA
 if APP_CAPA: st.image(APP_CAPA, use_container_width=True)
 if APP_LOGO: st.image(APP_LOGO, width=100)
 
@@ -201,4 +193,16 @@ if st.button("🔍 Buscar Perfil e Analisar Grátis"):
             if not dados["sucesso"]:
                 seguidores_simulados = "Iniciante"
                 st.info(f"⚡ Análise rápida para: {user_teste}")
+                prompt_free = f"Analise o usuário {user_teste} focado em crescer no TikTok Shop. Diga 1 erro de retenção e dê 1 dica de gancho de entrada para 2026. Diga de forma curta que para liberar os cronogramas completos ele deve comprar o acesso premium no botão abaixo."
+            else:
+                st.success("✅ Perfil localizado!")
+                if dados["avatar"]: st.image(dados["avatar"], width=100)
+                st.write(f"👥 **Seguidores Reais:** {dados['seguidores']:,}".replace(",", "."))
+                seguidores_simulados = f"{dados['seguidores']} seguidores"
+                prompt_free = f"Analise de forma direta um perfil com {dados['seguidores']} seguidores que deseja vender no TikTok Shop. Diga 1 erro estrutural e dê 1 dica de gancho rápido de 3 segundos para 2026. Mencione que ele deve comprar a licença premium no botão abaixo para liberar cronogramas diários."
+            
+            resposta_free = chamar_gemini_gratis(prompt_free)
+            st.markdown(resposta_free)
+            
+
 
