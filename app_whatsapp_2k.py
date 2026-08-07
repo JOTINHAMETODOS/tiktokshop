@@ -154,7 +154,7 @@ if modo_admin == "true":
             st.session_state["config_app"]["subtitulo"] = novo_subtitulo
             st.session_state["config_app"]["logo_url"] = nova_logo
             st.session_state["config_app"]["capa_url"] = nova_capa
-            st.success("✨ Visual atualizado!")
+            st.success("✨ Visual updated!")
             st.rerun()
             
         st.markdown("---")
@@ -178,27 +178,17 @@ if modo_admin == "true":
 # =====================================================================
 if token_cliente:
     if token_cliente in st.session_state["clientes_premium"]:
+        ip_g = st.session_state["clientes_premium"][token_cliente]
+        if ip_g is not None and ip_g != ip_atual and "sessao_autorizada" not in st.session_state:
+            st.error("🔒 Link Bloqueado: Este acesso VIP já foi registrado em outro aparelho.")
+            st.markdown(f'<a href="{link_suporte_whatsapp}" target="_blank"><button style="background-color:#238636;color:white;font-size:20px;font-weight:bold;height:60px;width:100%;border-radius:10px;border:none;cursor:pointer;">🟢 Chamar Suporte Humano no WhatsApp para Liberar</button></a>', unsafe_allow_html=True)
+            st.stop()
+        elif ip_g is None:
+            st.session_state["clientes_premium"][token_cliente] = ip_atual
+            st.session_state["sessao_autorizada"] = True
+            
         if APP_CAPA: st.image(APP_CAPA, use_container_width=True)
         if APP_LOGO: st.image(APP_LOGO, width=80)
         
         st.title("💎 Área VIP - Método 2K")
         nicho = st.selectbox("Qual o nicho do produto do seu cliente?", ["Achadinhos", "Gamer", "Beleza", "Moda", "Saúde"])
-        username_premium = st.text_input("Digite o @usuario para auditoria profunda:")
-        if st.button("🚀 Iniciar Auditoria Avançada"):
-            with st.spinner("🧠 Gerando plano mestre de contingência..."):
-                dados_premium = puxar_dados_reais_tiktok(username_premium)
-                relatorio_vip = mapear_relatorio_estrategico(username_premium, nicho, premium=True)
-                st.markdown(relatorio_vip)
-        st.stop()
-
-# =====================================================================
-# 🚀 FLUXO C: TELA INICIAL PÚBLICA
-# =====================================================================
-if APP_CAPA: st.image(APP_CAPA, use_container_width=True)
-if APP_LOGO: st.image(APP_LOGO, width=100)
-
-st.title(APP_TITULO)
-st.subheader(APP_SUBTITULO)
-
-            
-           
