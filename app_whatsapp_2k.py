@@ -2,21 +2,23 @@ import streamlit as st
 import requests
 
 # =====================================================================
-# ⚙️ CONFIGURAÇÕES JÁ VINCULADAS (DADOS DO SEU WHATSAPP)
+# ⚙️ CONFIGURAÇÕES FIXAS DO SEU NEGÓCIO
 # =====================================================================
 NUMERO_WHATSAPP = "5569992813319"  # Seu número com DDD 69
 SENHA_PAINEL_ADMIN = "ADMIN_2K_SECRET" 
 USUARIO_ADMIN_MESTRO = "admin"
 
-# Inicialização segura da memória nativa do servidor (Evita travamentos)
+# Inicialização segura da memória nativa do servidor (Evita travamentos de tela preta)
 if "clientes_premium" not in st.session_state:
     st.session_state["clientes_premium"] = {}
 
+# Área que guarda as imagens e textos mutáveis (Editáveis pelo Painel Admin)
 if "config_app" not in st.session_state:
     st.session_state["config_app"] = {
         "titulo": "🚀 Analisador Viral TikTok Shop",
         "subtitulo": "Descubra o que falta para seu perfil alcançar 2.000 seguidores e liberar as vendas",
-        "logo_url": "https://unsplash.com"
+        "logo_url": "https://unsplash.com", # Logo padrão do app
+        "capa_url": "" # Capa opcional começa em branco
     }
 
 GEMINI_API_KEY = st.secrets.get("GEMINI_KEY", "")
@@ -47,9 +49,11 @@ query_params = st.query_params
 token_cliente = query_params.get("token", None)
 modo_admin = query_params.get("admin", None)
 
+# Puxa os dados customizados salvos na memória do app
 APP_TITULO = st.session_state["config_app"]["titulo"]
 APP_SUBTITULO = st.session_state["config_app"]["subtitulo"]
 APP_LOGO = st.session_state["config_app"]["logo_url"]
+APP_CAPA = st.session_state["config_app"]["capa_url"]
 
 link_suporte_whatsapp = f"https://wa.me{NUMERO_WHATSAPP}?text=Olá!%20Meu%20acesso%20Premium%20bloqueou%20porque%20mudei%20de%20dispositivo.%20Pode%20resetar%20meu%20IP?"
 
@@ -77,7 +81,7 @@ def puxar_dados_reais_tiktok(username):
     user_limpo = username.replace("@", "").strip()
     url = f"https://tikwm.com{user_limpo}"
     try:
-        resposta = requests.get(url, timeout=10).json()
+        resposta = requests.get(url, timeout=7).json()
         if resposta.get("code") == 0 and "data" in resposta:
             dados_user = resposta["data"]["user"]
             dados_status = resposta["data"]["stats"]
@@ -93,7 +97,9 @@ def puxar_dados_reais_tiktok(username):
         pass
     return {"sucesso": False}
 
-# FLUXO ADMIN
+# =====================================================================
+# 🎛️ PAINEL ADMINISTRATIVO MESTRE (EDITÁVEL)
+# =====================================================================
 if modo_admin == "true":
     st.title("🎛️ Autenticação Administrativa")
     with st.form("login_admin"):
@@ -105,20 +111,26 @@ if modo_admin == "true":
             st.session_state["admin_autenticado"] = True
         else:
             st.error("❌ Usuário ou Senha incorretos.")
+            
     if st.session_state.get("admin_autenticado", False):
         st.success("🔓 Conectado!")
-        st.subheader("🎨 Personalizar Visual")
+        
+        st.subheader("🎨 Personalizar Visual do Aplicativo (Inovar Sempre)")
         novo_titulo = st.text_input("Título do Aplicativo:", APP_TITULO)
         novo_subtitulo = st.text_area("Subtítulo da Tela Inicial:", APP_SUBTITULO)
-        nova_logo = st.text_input("Link da Logo (URL):", APP_LOGO)
-        if st.button("💾 Salvar Novas Configurações"):
+        nova_logo = st.text_input("Link da LOGO (URL do ImgBB):", APP_LOGO)
+        nova_capa = st.text_input("Link da Imagem de CAPA (URL do ImgBB):", APP_CAPA, placeholder="Cole aqui para exibir um banner no topo")
+        
+        if st.button("💾 Salvar Novas Configurações Visuais"):
             st.session_state["config_app"]["titulo"] = novo_titulo
             st.session_state["config_app"]["subtitulo"] = novo_subtitulo
             st.session_state["config_app"]["logo_url"] = nova_logo
-            st.success("✨ Aparência atualizada!")
+            st.session_state["config_app"]["capa_url"] = nova_capa
+            st.success("✨ Visual atualizado instantaneamente!")
             st.rerun()
+            
         st.markdown("---")
-        st.subheader("🔑 Links Premium")
+        st.subheader("🔑 Links Premium (Emissão de Clientes)")
         with st.form("criar_token"):
             novo_tk = st.text_input("Nome do Comprador (Ex: MARCOS_VIP):").strip()
             cadastrar = st.form_submit_button("➕ Gerar Novo Link de Acesso")
@@ -129,6 +141,7 @@ if modo_admin == "true":
                     st.code(f"https://streamlit.app{novo_tk}")
                 else:
                     st.warning("⚠️ Código já existe.")
+                    
         for tk, ip_g in list(st.session_state["clientes_premium"].items()):
             col1, col2 = st.columns()
             with col1:
@@ -139,7 +152,9 @@ if modo_admin == "true":
                     st.rerun()
     st.stop()
 
-# FLUXO PREMIUM
+# =====================================================================
+# 💎 FLUXO B: ÁREA PREMIUM COMPRADA
+# =====================================================================
 if token_cliente:
     if token_cliente in st.session_state["clientes_premium"]:
         ip_g = st.session_state["clientes_premium"][token_cliente]
@@ -150,12 +165,16 @@ if token_cliente:
         elif ip_g is None:
             st.session_state["clientes_premium"][token_cliente] = ip_atual
             st.session_state["sessao_autorizada"] = True
-        st.title("💎 Área VIP - Método 2K")
+            
+        # Exibição de Capa e Logo Premium Customizadas
+        if APP_CAPA: st.image(APP_CAPA, use_container_width=True)
         if APP_LOGO: st.image(APP_LOGO, width=80)
+        
+        st.title("💎 Área VIP - Método 2K")
         nicho = st.selectbox("Qual o nicho do produto?", ["Achadinhos", "Gamer", "Beleza", "Moda", "Saúde"])
         username_premium = st.text_input("Digite o @usuario para auditoria profunda:")
         if st.button("🚀 Iniciar Auditoria Avançada"):
-            with st.spinner("🧠 Gerando estratégias..."):
+            with st.spinner("🧠 Gerando estratégias de 2026..."):
                 dados_tiktok = puxar_dados_reais_tiktok(username_premium)
                 ctx = f"Perfil real com {dados_tiktok['seguidores']} seguidores." if dados_tiktok["sucesso"] else ""
                 prompt_vip = f"Você é mentor de TikTok Shop. Crie um plano com 3 roteiros virais copiáveis de 2026 para o usuário {username_premium}. Nicho: {nicho}. {ctx}"
@@ -163,26 +182,22 @@ if token_cliente:
                 st.markdown(resultado_ia)
         st.stop()
 
-# TELA PUBLICA
+# =====================================================================
+# 🚀 FLUXO C: TELA INICIAL PÚBLICA
+# =====================================================================
+# Exibição de Capa e Logo Customizadas na tela do cliente
+if APP_CAPA: st.image(APP_CAPA, use_container_width=True)
 if APP_LOGO: st.image(APP_LOGO, width=100)
+
 st.title(APP_TITULO)
 st.subheader(APP_SUBTITULO)
 user_teste = st.text_input("Seu @ Nome de Usuário do TikTok:", placeholder="ex: @seu_perfil")
+
 if st.button("🔍 Buscar Perfil e Analisar Grátis"):
     if not user_teste:
         st.warning("⚠️ Digite o seu nome de usuário.")
     else:
-        with st.spinner("📡 Mapeando TikTok real..."):
+        with st.spinner("📡 Escaneando dados estruturais do perfil..."):
             dados = puxar_dados_reais_tiktok(user_teste)
+            
             if not dados["sucesso"]:
-                st.error("❌ Não encontramos esse perfil público. Verifique se o arroba está correto.")
-            else:
-                st.success("✅ Perfil localizado!")
-                if dados["avatar"]: st.image(dados["avatar"], width=100)
-                st.write(f"👥 **Seguidores Reais:** {dados['seguidores']:,}".replace(",", "."))
-                prompt_free = f"Analise de forma direta um perfil com {dados['seguidores']} seguidores que deseja vender no TikTok Shop. Diga 1 erro estrutural e dê 1 dica de gancho rápido de 3 segundos para 2026. Mencione que ele deve comprar a licença premium no botão abaixo para liberar cronogramas diários."
-                resposta_free = chamar_gemini_gratis(prompt_free)
-                st.markdown(resposta_free)
-                texto_wpp = f"Olá! Analisei meu perfil @{user_teste.replace('@','')} com {dados['seguidores']} seguidores no robô. Fiz o teste gratuito e quero comprar o acesso Premium!"
-                link_final = f"https://wa.me{NUMERO_WHATSAPP}?text={requests.utils.quote(texto_wpp)}"
-                st.markdown(f'<br><a href="{link_final}" target="_blank"><button style="background-color:#238636;color:white;font-size:22px;font-weight:bold;height:65px;width:100%;border-radius:12px;border:none;cursor:pointer;box-shadow: 0px 4px 15px rgba(0,255,0,0.2);">🟢 QUERO MEU ACESSO PREMIUM VIA WHATSAPP</button></a>', unsafe_allow_html=True)
