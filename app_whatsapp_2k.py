@@ -19,13 +19,14 @@ if "config_app" not in st.session_state:
         "capa_url": ""
     }
 
+# Puxa a chave configurada nos Secrets do Streamlit
 GEMINI_API_KEY = st.secrets.get("GEMINI_KEY", "")
 
 def chamar_gemini_gratis(prompt_texto):
-    # ROTA OFICIAL ATUALIZADA PARA CHAVES PADRÃO AQ. EM 2026
+    # Rota direta do Google Gemini 1.5 Flash
     url = "https://googleapis.com"
     
-    # Configuração de cabeçalho exigida pelo Google para chaves de alta segurança
+    # Cabeçalho obrigatório para chaves com formato de alta segurança (AQ.)
     headers = {
         "Content-Type": "application/json",
         "x-goog-api-key": GEMINI_API_KEY
@@ -36,7 +37,7 @@ def chamar_gemini_gratis(prompt_texto):
         resposta = requests.post(url, json=payload, headers=headers, timeout=15).json()
         return resposta['candidates']['content']['parts']['text']
     except Exception as e:
-        return "⚠️ Chave de API inválida ou pendente de ativação. Verifique se copiou o código completo sem espaços nos Secrets do Streamlit."
+        return "⚠️ Erro de autenticação. Certifique-se de que sua chave do Gemini nos Secrets do Streamlit está correta e sem espaços."
 
 def capturar_ip():
     try:
@@ -204,5 +205,6 @@ if st.button("🔍 Buscar Perfil e Analisar Grátis"):
             resposta_free = chamar_gemini_gratis(prompt_free)
             st.markdown(resposta_free)
             
+
 
 
