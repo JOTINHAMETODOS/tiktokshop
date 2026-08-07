@@ -126,7 +126,7 @@ if modo_admin == "true":
             st.session_state["config_app"]["subtitulo"] = novo_subtitulo
             st.session_state["config_app"]["logo_url"] = nova_logo
             st.session_state["config_app"]["capa_url"] = nova_capa
-            st.success("✨ Visual atualizado instantaneamente!")
+            st.success("✨ Visual updated!")
             st.rerun()
             
         st.markdown("---")
@@ -166,7 +166,6 @@ if token_cliente:
             st.session_state["clientes_premium"][token_cliente] = ip_atual
             st.session_state["sessao_autorizada"] = True
             
-        # Exibição de Capa e Logo Premium Customizadas
         if APP_CAPA: st.image(APP_CAPA, use_container_width=True)
         if APP_LOGO: st.image(APP_LOGO, width=80)
         
@@ -185,7 +184,6 @@ if token_cliente:
 # =====================================================================
 # 🚀 FLUXO C: TELA INICIAL PÚBLICA
 # =====================================================================
-# Exibição de Capa e Logo Customizadas na tela do cliente
 if APP_CAPA: st.image(APP_CAPA, use_container_width=True)
 if APP_LOGO: st.image(APP_LOGO, width=100)
 
@@ -197,7 +195,10 @@ if st.button("🔍 Buscar Perfil e Analisar Grátis"):
     if not user_teste:
         st.warning("⚠️ Digite o seu nome de usuário.")
     else:
-        with st.spinner("📡 Escaneando dados estruturais do perfil..."):
+        with st.spinner("📡 Escaneando dados estruturais..."):
             dados = puxar_dados_reais_tiktok(user_teste)
             
             if not dados["sucesso"]:
+                seguidores_simulados = "Iniciante"
+                st.info(f"⚡ Análise rápida para: {user_teste}")
+
