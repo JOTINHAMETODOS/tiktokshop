@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import random
+import urllib.parse  # Biblioteca que faltava para gerar o link do WhatsApp
 
 # =====================================================================
 # ⚙️ CONFIGURAÇÕES FIXAS DO SEU NEGÓCIO (WHATSAPP COM DDD 69)
@@ -154,7 +155,7 @@ if modo_admin == "true":
             st.session_state["config_app"]["subtitulo"] = novo_subtitulo
             st.session_state["config_app"]["logo_url"] = nova_logo
             st.session_state["config_app"]["capa_url"] = nova_capa
-            st.success("✨ Visual updated!")
+            st.success("✨ Visual atualizado!")
             st.rerun()
             
         st.markdown("---")
@@ -191,4 +192,4 @@ if token_cliente:
         if APP_LOGO: st.image(APP_LOGO, width=80)
         
         st.title("💎 Área VIP - Método 2K")
-        nicho = st.selectbox("Qual o nicho do produto do seu cliente?", ["Achadinhos", "Gamer", "Beleza", "Moda", "Saúde"])
+
