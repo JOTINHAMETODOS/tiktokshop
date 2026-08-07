@@ -207,4 +207,3 @@ if st.button("🔍 Buscar Perfil e Analisar Grátis"):
             
 
 
-
