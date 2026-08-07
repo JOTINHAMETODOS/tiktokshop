@@ -20,7 +20,7 @@ if "config_app" not in st.session_state:
     }
 
 # Puxa a chave mestre dos segredos do Streamlit
-GEMINI_API_KEY = st.secrets.get("CHAVE_MESTRE", st.secrets.get("GEMINI_KEY", ""))
+CHAVE_MESTRE="AQ.Ab8RN6LgYms6buLc9DAAnMy1lhNGBcEiS4TQkMFRKUpVf0HD9g"
 
 def chamar_gemini_real(prompt_texto):
     url = "https://googleapis.com"
