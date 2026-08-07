@@ -154,7 +154,7 @@ if token_cliente:
         if st.button("🚀 Iniciar Auditoria Avançada"):
             with st.spinner("⚙️ Gerando estratégias..."):
                 dados_premium = puxar_dados_reais_tiktok(username_premium)
-                st.markdown(gerar_analise_falsa(username_premium, dados_premium.get("seguidores") if dados_premium["sucesso"] else None))
+                st.markdown(gerar_analise_falsa(username_premium, dados_premium.get("seguidores") if (dados_premium and dados_premium["sucesso"]) else None))
         st.stop()
 
 # TELA PÚBLICA
@@ -175,8 +175,8 @@ if st.button("🔍 Buscar Perfil e Analisar Grátis"):
             st.success("✅ Perfil localizado e estruturado!")
             
             # Se encontrar o perfil real, joga as métricas e a foto na tela do cliente
-            if dados["sucesso"]:
-                col1, col2 = st.columns([1, 3])
+            if dados and dados["sucesso"]:
+                col1, col2 = st.columns()
                 with col1:
                     if dados["avatar"]: st.image(dados["avatar"], width=90)
                 with col2:
@@ -190,10 +190,9 @@ if st.button("🔍 Buscar Perfil e Analisar Grátis"):
                 st.info(f"⚡ Análise rápida ativada para o perfil: {user_teste}")
                 resposta_sistema = gerar_analise_falsa(user_teste)
                 
-            st.markdown(resposta_free if 'resposta_free' in locals() else resposta_sistema)
+            st.markdown(resposta_sistema)
             
-            seguidores_txt = f"{dados['seguidores']} seguidores" if dados["sucesso"] else "Iniciante"
+            seguidores_txt = f"{dados['seguidores']} seguidores" if (dados and dados["sucesso"]) else "Iniciante"
             texto_wpp = f"Olá! Analisei meu perfil @{user_teste.replace('@','')} ({seguidores_txt}) no robô Método 2K. Fiz o teste gratuito e quero comprar o acesso Premium para liberar os roteiros avançados!"
             link_final = f"https://wa.me{NUMERO_WHATSAPP}?text={requests.utils.quote(texto_wpp)}"
             st.markdown(f'<br><a href="{link_final}" target="_blank"><button style="background-color:#238636;color:white;font-size:22px;font-weight:bold;height:65px;width:100%;border-radius:12px;border:none;cursor:pointer;box-shadow: 0px 4px 15px rgba(0,255,0,0.2);">🟢 QUERO MEU ACESSO PREMIUM VIA WHATSAPP</button></a>', unsafe_allow_html=True)
-
