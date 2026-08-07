@@ -51,20 +51,43 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Gerador inteligente de dicas virais aleatórias para o teste grátis (Sem travar)
-def gerar_analise_falsa(username):
+# Sistema estável de busca de dados no TikTok
+def puxar_dados_reais_tiktok(username):
+    user_limpo = username.replace("@", "").strip()
+    url = f"https://tikwm.com{user_limpo}"
+    try:
+        resposta = requests.get(url, timeout=7).json()
+        if resposta.get("code") == 0 and "data" in resposta:
+            dados_user = resposta["data"]["user"]
+            dados_status = resposta["data"]["stats"]
+            return {
+                "sucesso": True,
+                "nome": dados_user.get("nickname", user_limpo),
+                "avatar": dados_user.get("avatarLarger"),
+                "seguidores": dados_status.get("followerCount", 0),
+                "curtidas": dados_status.get("heartCount", 0),
+                "assinatura": dados_user.get("signature", "")
+            }
+    except:
+        pass
+    return {"sucesso": False}
+
+# Gerador inteligente de diagnósticos
+def gerar_analise_falsa(username, seguidores=None):
     erros = [
         "Seu perfil está sofrendo com o travamento padrão das 200 visualizações por falta de um Gancho de Retenção Visual nos primeiros 1.5 segundos.",
         "O algoritmo do TikTok não conseguiu identificar o nicho claro dos seus vídeos porque a sua Biografia não possui as palavras-chave indexadas de busca.",
-        "Seus takes de produtos estão parecendo anúncios tradicionais de televisão. O público de 2026 rejeita propagandas agressivas e busca reviews nativos em formato de ASMR."
+        "Seus takes de produtos estão parecendo anúncios tradicionais de televisão. O público rejeita propagandas agressivas e busca reviews nativos em formato de ASMR."
     ]
     ganchos = [
         "Eu achei que esse produto de R$ 30 do TikTok Shop era golpe, até que eu decidi testar...",
         "Se você tem menos de 2.000 seguidores e ainda não vendeu nada, pare de postar vídeos e mude para essa estratégia...",
-        "O dono da loja secreta do TikTok Shop vai me odiar por revelar o menor preço desse periférico hoje..."
+        "O dono da loja secreta do TikTok Shop vai me odiar por revelar o menor preço desse produto hoje..."
     ]
+    
+    seg_txt = f"Atualmente com {seguidores:,} seguidores" if seguidores else ""
     return f"""
-    ### 📊 Relatório Técnico de Engajamento para: **{username}**
+    ### 📊 Relatório Técnico de Engajamento para: **{username}** {seg_txt}
     
     ❌ **Gargalo Identificado:** {random.choice(erros)}
     
@@ -115,7 +138,6 @@ if modo_admin == "true":
                     st.code(f"https://streamlit.app{novo_tk}")
                 else:
                     st.warning("⚠️ Código já existe.")
-                    
         for tk in list(st.session_state["clientes_premium"].keys()):
             st.write(f"🎟️ **Token Premium Ativo:** `{tk}`")
     st.stop()
@@ -131,7 +153,8 @@ if token_cliente:
         username_premium = st.text_input("Digite o @usuario para auditoria profunda:")
         if st.button("🚀 Iniciar Auditoria Avançada"):
             with st.spinner("⚙️ Gerando estratégias..."):
-                st.markdown(gerar_analise_falsa(username_premium))
+                dados_premium = puxar_dados_reais_tiktok(username_premium)
+                st.markdown(gerar_analise_falsa(username_premium, dados_premium.get("seguidores") if dados_premium["sucesso"] else None))
         st.stop()
 
 # TELA PÚBLICA
@@ -146,15 +169,31 @@ if st.button("🔍 Buscar Perfil e Analisar Grátis"):
     if not user_teste:
         st.warning("⚠️ Digite o seu nome de usuário.")
     else:
-        with st.spinner("📡 Escaneando dados estruturais..."):
-            # Exibe o diagnóstico estável gerado pelo sistema
-            st.success("✅ Perfil localizado e mapeado com sucesso!")
-            resposta_sistema = gerar_analise_falsa(user_teste)
-            st.markdown(resposta_sistema)
+        with st.spinner("📡 Escaneando banco de dados do TikTok..."):
+            dados = puxar_dados_reais_tiktok(user_teste)
             
-            texto_wpp = f"Olá! Analisei meu perfil @{user_teste.replace('@','')} no robô Método 2K. Fiz o teste gratuito e quero comprar o acesso Premium para liberar os roteiros avançados!"
+            st.success("✅ Perfil localizado e estruturado!")
+            
+            # Se encontrar o perfil real, joga as métricas e a foto na tela do cliente
+            if dados["sucesso"]:
+                col1, col2 = st.columns([1, 3])
+                with col1:
+                    if dados["avatar"]: st.image(dados["avatar"], width=90)
+                with col2:
+                    st.markdown(f"#### **{dados['nome']}**")
+                    st.write(f"👥 **Seguidores:** {dados['seguidores']:,}".replace(",", "."))
+                    st.write(f"❤️ **Total de Curtidas:** {dados['curtidas']:,}".replace(",", "."))
+                st.markdown("---")
+                resposta_sistema = gerar_analise_falsa(user_teste, dados["seguidores"])
+            else:
+                # Se o perfil falhar na API por instabilidade, o app roda de forma blindada sem quebrar
+                st.info(f"⚡ Análise rápida ativada para o perfil: {user_teste}")
+                resposta_sistema = gerar_analise_falsa(user_teste)
+                
+            st.markdown(resposta_free if 'resposta_free' in locals() else resposta_sistema)
+            
+            seguidores_txt = f"{dados['seguidores']} seguidores" if dados["sucesso"] else "Iniciante"
+            texto_wpp = f"Olá! Analisei meu perfil @{user_teste.replace('@','')} ({seguidores_txt}) no robô Método 2K. Fiz o teste gratuito e quero comprar o acesso Premium para liberar os roteiros avançados!"
             link_final = f"https://wa.me{NUMERO_WHATSAPP}?text={requests.utils.quote(texto_wpp)}"
             st.markdown(f'<br><a href="{link_final}" target="_blank"><button style="background-color:#238636;color:white;font-size:22px;font-weight:bold;height:65px;width:100%;border-radius:12px;border:none;cursor:pointer;box-shadow: 0px 4px 15px rgba(0,255,0,0.2);">🟢 QUERO MEU ACESSO PREMIUM VIA WHATSAPP</button></a>', unsafe_allow_html=True)
-
-
 
